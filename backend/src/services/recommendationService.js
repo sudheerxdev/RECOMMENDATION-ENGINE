@@ -95,7 +95,8 @@ const getSuggestedCourses = ({
     provider: resource.provider,
     type: resource.type,
     skill: normalizeSkill(resource.skill),
-    url: resource.url
+    url: resource.url,
+    imageUrl: resource.imageUrl || null
   }));
 
   const fromCatalog = COURSE_CATALOG.filter((course) => {

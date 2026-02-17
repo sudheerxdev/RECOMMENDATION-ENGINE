@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       sparse: true,
-      default: null
+      default: undefined
     },
     emailVerified: {
       type: Boolean,
@@ -70,6 +70,12 @@ const userSchema = new mongoose.Schema(
         type: String,
         enum: ['casual', 'balanced', 'intensive'],
         default: 'balanced'
+      },
+      weeklyHours: {
+        type: Number,
+        min: 1,
+        max: 80,
+        default: 8
       }
     }
   },

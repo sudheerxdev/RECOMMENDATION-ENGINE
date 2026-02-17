@@ -5,11 +5,18 @@ import mongoSanitize from 'express-mongo-sanitize';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
-import { allowedFrontendOrigins, env, isProd } from './config/env.js';
+import {
+  allowedFrontendOriginPatterns,
+  allowedFrontendOrigins,
+  env,
+  isProd,
+  trustProxy
+} from './config/env.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 const app = express();
+app.set('trust proxy', trustProxy);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -30,10 +37,11 @@ app.use(
         return;
       }
 
-      const isLocalhost = /^http:\/\/localhost:\d{2,5}$/i.test(origin);
+      const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d{2,5})?$/i.test(origin);
       const isAllowedOrigin = normalizedAllowedOrigins.includes(origin);
+      const isAllowedByPattern = allowedFrontendOriginPatterns.some((pattern) => pattern.test(origin));
 
-      if (isAllowedOrigin || (!isProd && isLocalhost)) {
+      if (isAllowedOrigin || isAllowedByPattern || (!isProd && isLocalhost)) {
         callback(null, true);
         return;
       }

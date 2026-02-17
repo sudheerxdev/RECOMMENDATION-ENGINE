@@ -1,13 +1,19 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   BarChart3,
   BookOpenCheck,
   BriefcaseBusiness,
+  CircleGauge,
   Compass,
   FileSearch2,
+  GitCompareArrows,
+  House,
   LayoutDashboard,
+  Target,
+  Timer,
   Settings2,
   Sparkles
 } from 'lucide-react';
@@ -15,19 +21,33 @@ import { cn } from '@/lib/utils';
 
 const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'journey', label: 'Onboarding', icon: CircleGauge },
   { id: 'skills', label: 'My Skills', icon: BarChart3 },
   { id: 'recommendations', label: 'Recommendations', icon: Sparkles },
+  { id: 'compare', label: 'Compare Paths', icon: GitCompareArrows },
+  { id: 'goals', label: 'Saved Goals', icon: Target },
+  { id: 'badges', label: 'Badges', icon: Sparkles },
+  { id: 'history', label: 'Timeline', icon: Timer },
   { id: 'jobs', label: 'Jobs & Internships', icon: BriefcaseBusiness },
-  { id: 'learning', label: 'Learning Hub', icon: BookOpenCheck },
+  { id: 'learning', label: 'Career Resources', icon: BookOpenCheck },
   { id: 'resume', label: 'Resume Analyzer', icon: FileSearch2 },
   { id: 'settings', label: 'Settings', icon: Settings2 }
 ];
 
+const pageItems = [
+  { href: '/', label: 'Home', icon: House },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/career-resources', label: 'Career Resources', icon: BookOpenCheck },
+  { href: '/login', label: 'Switch Account', icon: Target }
+];
+
 interface DashboardSidebarProps {
   userName: string;
+  userAvatarUrl?: string | null;
+  onOpenProfile?: () => void;
 }
 
-export const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
+export const DashboardSidebar = ({ userName, userAvatarUrl, onOpenProfile }: DashboardSidebarProps) => {
   return (
     <>
       <div className="rounded-2xl border border-border/80 bg-white/85 p-3 shadow-panel backdrop-blur lg:hidden">
@@ -44,14 +64,43 @@ export const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
             </a>
           ))}
         </div>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {pageItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="inline-flex items-center justify-center gap-1 rounded-md border border-border/70 bg-white/70 px-2 py-2 text-xs font-medium text-foreground/90"
+            >
+              <item.icon className="h-3.5 w-3.5 text-primary/80" />
+              {item.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <aside className="hidden h-[calc(100vh-2rem)] rounded-2xl border border-border/80 bg-white/85 p-4 shadow-panel backdrop-blur lg:sticky lg:top-4 lg:block">
-        <div className="mb-5 rounded-xl bg-secondary/45 p-3">
+        <button
+          type="button"
+          className="mb-5 w-full rounded-xl bg-secondary/45 p-3 text-left transition-colors hover:bg-secondary/60"
+          onClick={onOpenProfile}
+        >
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Workspace</p>
-          <p className="mt-1 font-heading text-lg font-semibold">{userName || 'Career Explorer'}</p>
+          <div className="mt-2 flex items-center gap-2">
+            {userAvatarUrl ? (
+              <img
+                src={userAvatarUrl}
+                alt={userName}
+                className="h-9 w-9 rounded-full object-cover ring-1 ring-border"
+              />
+            ) : (
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                {userName?.charAt(0)?.toUpperCase() || 'U'}
+              </span>
+            )}
+            <p className="font-heading text-lg font-semibold">{userName || 'Career Explorer'}</p>
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">Career guidance cockpit</p>
-        </div>
+        </button>
 
         <nav className="space-y-1.5">
           {navigationItems.map((item, index) => (
@@ -79,6 +128,20 @@ export const DashboardSidebar = ({ userName }: DashboardSidebarProps) => {
           <p className="mt-2 text-xs leading-5 text-muted-foreground">
             Complete one recommendation sprint: analyze resume, close one skill gap, and ship one portfolio item.
           </p>
+        </div>
+
+        <div className="mt-4 space-y-2">
+          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Pages</p>
+          {pageItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="inline-flex w-full items-center gap-2 rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/45 hover:text-foreground"
+            >
+              <item.icon className="h-4 w-4 text-primary/80" />
+              {item.label}
+            </Link>
+          ))}
         </div>
       </aside>
     </>

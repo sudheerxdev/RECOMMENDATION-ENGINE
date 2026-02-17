@@ -19,6 +19,8 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('7d'),
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
   FRONTEND_URLS: z.string().optional(),
+  FRONTEND_ORIGIN_REGEX: z.string().optional(),
+  TRUST_PROXY: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-4.1-mini'),
@@ -39,9 +41,47 @@ export const env = parsed.data;
 
 export const isProd = env.NODE_ENV === 'production';
 
+const parseCsvList = (value = '') =>
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const parseOriginRegexList = (value = '') =>
+  parseCsvList(value).map((pattern) => {
+    try {
+      return new RegExp(pattern, 'i');
+    } catch {
+      throw new Error(`Invalid FRONTEND_ORIGIN_REGEX pattern: ${pattern}`);
+    }
+  });
+
+const parseTrustProxy = (value) => {
+  if (!value) {
+    return isProd ? 1 : false;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'true') {
+    return true;
+  }
+  if (normalized === 'false') {
+    return false;
+  }
+
+  const maybeNumber = Number(normalized);
+  if (Number.isInteger(maybeNumber) && maybeNumber >= 0) {
+    return maybeNumber;
+  }
+
+  return value.trim();
+};
+
 export const allowedFrontendOrigins = [
   env.FRONTEND_URL,
-  ...(env.FRONTEND_URLS
-    ? env.FRONTEND_URLS.split(',').map((value) => value.trim()).filter(Boolean)
-    : [])
+  ...parseCsvList(env.FRONTEND_URLS)
 ];
+
+export const allowedFrontendOriginPatterns = parseOriginRegexList(env.FRONTEND_ORIGIN_REGEX);
+
+export const trustProxy = parseTrustProxy(env.TRUST_PROXY);

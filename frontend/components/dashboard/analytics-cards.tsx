@@ -4,27 +4,68 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight, Award, Briefcase, TrendingUp } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, RadialBar, RadialBarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { RecommendationResponse } from '@/lib/types';
+import type { RecommendationHistoryItem, RecommendationResponse } from '@/lib/types';
 
 interface AnalyticsCardsProps {
   recommendation: RecommendationResponse | null;
   skillCount: number;
+  history: RecommendationHistoryItem[];
 }
 
-const weeklyData = [
-  { day: 'Mon', score: 42 },
-  { day: 'Tue', score: 48 },
-  { day: 'Wed', score: 52 },
-  { day: 'Thu', score: 58 },
-  { day: 'Fri', score: 64 },
-  { day: 'Sat', score: 69 },
-  { day: 'Sun', score: 74 }
-];
+const dayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
 
-export const AnalyticsCards = ({ recommendation, skillCount }: AnalyticsCardsProps) => {
+const getHistoryScore = (item: RecommendationHistoryItem) => {
+  const scores =
+    item.recommendationPayload?.recommendations
+      ?.map((recommendation) => recommendation?.suitabilityScore || 0)
+      .filter((score) => score > 0) || [];
+
+  if (!scores.length) {
+    return 0;
+  }
+
+  return Math.max(...scores);
+};
+
+const toDateKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const buildWeeklyTrendData = (history: RecommendationHistoryItem[], bestScore: number) => {
+  const today = new Date();
+  const baseline = Math.max(25, bestScore ? bestScore - 18 : 44);
+  const target = Math.max(baseline, bestScore || baseline);
+  const latestScoreByDay = new Map<string, number>();
+
+  history
+    .slice()
+    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .forEach((item) => {
+      const score = getHistoryScore(item);
+      if (score <= 0) {
+        return;
+      }
+      latestScoreByDay.set(toDateKey(new Date(item.createdAt)), score);
+    });
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (6 - index));
+
+    const projected = Math.round(baseline + ((target - baseline) * index) / 6);
+    const score = latestScoreByDay.get(toDateKey(date)) ?? projected;
+
+    return {
+      day: dayFormatter.format(date),
+      score
+    };
+  });
+};
+
+export const AnalyticsCards = ({ recommendation, skillCount, history }: AnalyticsCardsProps) => {
   const bestScore = recommendation?.bestCareerPath?.suitabilityScore || 0;
   const recommendationCount = recommendation?.recommendations?.length || 0;
   const gapCount = recommendation?.bestCareerPath?.skillGap?.length || 0;
+  const weeklyData = buildWeeklyTrendData(history, bestScore);
 
   const radialData = [{ name: 'Career Score', value: bestScore, fill: 'hsl(var(--primary))' }];
 

@@ -2,10 +2,11 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { askCareerAssistant } from '../services/llmService.js';
 
 export const askAssistant = asyncHandler(async (req, res) => {
-  const { message, recommendationContext = [] } = req.body;
+  const { message, chatHistory = [], recommendationContext = [] } = req.body;
 
   const reply = await askCareerAssistant({
     message,
+    chatHistory,
     userProfile: {
       skills: req.user?.skills || [],
       interests: req.user?.interests || [],

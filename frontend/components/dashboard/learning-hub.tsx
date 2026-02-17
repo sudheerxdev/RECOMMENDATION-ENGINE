@@ -7,19 +7,27 @@ import type { RecommendationItem } from '@/lib/types';
 
 interface LearningHubProps {
   recommendations: RecommendationItem[];
+  searchQuery?: string;
 }
 
-export const LearningHub = ({ recommendations }: LearningHubProps) => {
+export const LearningHub = ({ recommendations, searchQuery = '' }: LearningHubProps) => {
   const courses = recommendations.flatMap((item) => item.suggestedCourses).slice(0, 6);
 
   return (
     <section id="learning" className="space-y-4">
-      <h2 className="font-heading text-xl font-semibold">Learning Hub</h2>
+      <h2 className="font-heading text-xl font-semibold">Career Resource Hub</h2>
 
       <div className="grid gap-4 md:grid-cols-2">
         {courses.length ? (
           courses.map((course, index) => (
             <Card key={`${course.title}-${index}`} className="hover:shadow-md transition-shadow">
+              {course.imageUrl ? (
+                <div className="h-32 overflow-hidden rounded-t-lg border-b border-border/70 bg-secondary/25">
+                  <img src={course.imageUrl} alt={course.title} className="h-full w-full object-cover" loading="lazy" />
+                </div>
+              ) : (
+                <div className="h-10 rounded-t-lg border-b border-border/70 bg-gradient-to-r from-primary/18 via-accent/10 to-primary/14" />
+              )}
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
@@ -46,10 +54,14 @@ export const LearningHub = ({ recommendations }: LearningHubProps) => {
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">No Courses Yet</CardTitle>
-              <CardDescription>Generate recommendations to unlock tailored learning resources.</CardDescription>
-            </CardHeader>
-          </Card>
+                <CardTitle className="text-base">{searchQuery ? 'No Courses Match Current Search' : 'No Courses Yet'}</CardTitle>
+                <CardDescription>
+                  {searchQuery
+                    ? 'Clear search to see personalized courses for your recommended roles.'
+                    : 'Generate recommendations to unlock tailored career resources.'}
+                </CardDescription>
+              </CardHeader>
+            </Card>
         )}
       </div>
     </section>

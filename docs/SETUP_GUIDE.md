@@ -31,6 +31,11 @@ Use templates:
 
 Important: backend runtime reads `backend/.env`.
 
+For production deployments:
+- Set `NEXT_PUBLIC_API_BASE_URL` on frontend hosting (for example Vercel).
+- Set `TRUST_PROXY=1` on backend hosting behind a reverse proxy (for example Render).
+- Use `FRONTEND_ORIGIN_REGEX` only if you need preview-domain CORS support.
+
 ## 3. Configure MongoDB Atlas
 
 1. Create cluster

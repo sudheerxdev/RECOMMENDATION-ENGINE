@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SendHorizontal } from 'lucide-react';
+import { RotateCcw, SendHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,11 +19,12 @@ interface CareerChatProps {
 }
 
 export const CareerChat = ({ recommendations }: CareerChatProps) => {
+  const initialAssistantMessage: ChatMessage = {
+    role: 'assistant',
+    content: 'Ask me how to prioritize your next skills, projects, or role transitions.'
+  };
   const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content: 'Ask me how to prioritize your next skills, projects, or role transitions.'
-    }
+    initialAssistantMessage
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -38,12 +39,23 @@ export const CareerChat = ({ recommendations }: CareerChatProps) => {
     setInput('');
     setIsLoading(true);
 
+    const chatHistory = messages
+      .filter((turn, index) => !(index === 0 && turn.role === 'assistant'))
+      .slice(-8)
+      .map((turn) => ({
+        role: turn.role,
+        content: turn.content
+      }));
+
     try {
       const response = await apiClient.askChatAssistant({
         message: content,
+        chatHistory,
         recommendationContext: recommendations.slice(0, 3).map((item) => ({
           title: item.title,
-          suitabilityScore: item.suitabilityScore
+          suitabilityScore: item.suitabilityScore,
+          skillGap: item.skillGap.slice(0, 5),
+          recommendedSkillsToLearn: item.recommendedSkillsToLearn.slice(0, 5)
         }))
       });
 
@@ -54,6 +66,11 @@ export const CareerChat = ({ recommendations }: CareerChatProps) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetConversation = () => {
+    setMessages([initialAssistantMessage]);
+    setInput('');
   };
 
   return (
@@ -73,6 +90,9 @@ export const CareerChat = ({ recommendations }: CareerChatProps) => {
               {message.content}
             </div>
           ))}
+          {isLoading ? (
+            <div className="rounded-md bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">Assistant is thinking...</div>
+          ) : null}
         </div>
         <div className="flex gap-2">
           <Input
@@ -90,6 +110,10 @@ export const CareerChat = ({ recommendations }: CareerChatProps) => {
           <Button className="gap-1" onClick={submitMessage} disabled={isLoading}>
             <SendHorizontal className="h-4 w-4" />
             Send
+          </Button>
+          <Button variant="outline" className="gap-1" onClick={resetConversation} disabled={isLoading}>
+            <RotateCcw className="h-4 w-4" />
+            Reset
           </Button>
         </div>
       </CardContent>

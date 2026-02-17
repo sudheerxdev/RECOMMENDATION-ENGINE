@@ -5,8 +5,24 @@ declare global {
     google?: {
       accounts?: {
         id?: {
-          initialize: (config: { client_id: string; callback: (response: { credential?: string }) => void }) => void;
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential?: string }) => void;
+            ux_mode?: 'popup' | 'redirect';
+          }) => void;
           prompt: (callback?: (notification: { isNotDisplayed: () => boolean; isSkippedMoment: () => boolean }) => void) => void;
+          renderButton: (
+            parent: HTMLElement,
+            options: {
+              type?: 'standard' | 'icon';
+              theme?: 'outline' | 'filled_blue' | 'filled_black';
+              size?: 'small' | 'medium' | 'large';
+              text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
+              shape?: 'rectangular' | 'pill' | 'circle' | 'square';
+              logo_alignment?: 'left' | 'center';
+              width?: number;
+            }
+          ) => void;
           disableAutoSelect: () => void;
         };
       };
@@ -88,6 +104,48 @@ export const requestGoogleIdToken = async () => {
         reject(new Error('Google sign-in prompt was closed or blocked'));
       }
     });
+  });
+};
+
+export const renderGoogleSignInButton = async ({
+  container,
+  text = 'continue_with',
+  onCredential
+}: {
+  container: HTMLElement;
+  text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
+  onCredential: (idToken: string) => void;
+}) => {
+  if (!googleClientId) {
+    throw new Error('Google sign-in is not configured on the frontend');
+  }
+
+  await ensureGoogleScript();
+  const googleId = window.google?.accounts?.id;
+  if (!googleId) {
+    throw new Error('Google Identity API is unavailable');
+  }
+
+  googleId.initialize({
+    client_id: googleClientId,
+    ux_mode: 'popup',
+    callback: (response) => {
+      if (!response?.credential) {
+        return;
+      }
+      onCredential(response.credential);
+    }
+  });
+
+  container.innerHTML = '';
+  googleId.renderButton(container, {
+    type: 'standard',
+    theme: 'outline',
+    size: 'large',
+    shape: 'rectangular',
+    logo_alignment: 'left',
+    text,
+    width: Math.max(container.clientWidth || 0, 260)
   });
 };
 

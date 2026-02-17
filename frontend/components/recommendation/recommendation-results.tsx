@@ -160,7 +160,7 @@ export const RecommendationResults = ({ result }: RecommendationResultsProps) =>
                 <section className="space-y-3 rounded-md border border-border bg-muted/30 p-4 md:col-span-2">
                   <h4 className="flex items-center gap-2 font-semibold">
                     <Lightbulb className="h-4 w-4 text-accent" />
-                    Personalized Learning Roadmap
+                    Personalized Career Roadmap
                   </h4>
                   <div className="grid gap-3 md:grid-cols-3">
                     {item.learningRoadmap.map((step) => (

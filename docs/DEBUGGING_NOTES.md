@@ -95,3 +95,14 @@ Fix:
    - `frontend/node_modules`
    - `backend/node_modules`
 3. Re-run `npm install`.
+
+## 9. Frontend Production Build Fails with Missing API Base URL
+
+Symptom:
+
+- Build throws `Missing NEXT_PUBLIC_API_BASE_URL`
+
+Fix:
+
+- Set `NEXT_PUBLIC_API_BASE_URL` in your frontend deployment environment.
+- Example: `https://<your-render-service>.onrender.com/api`

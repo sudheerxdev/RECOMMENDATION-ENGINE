@@ -38,7 +38,7 @@ const config: Config = {
         body: ['var(--font-body)']
       },
       boxShadow: {
-        panel: '0 14px 40px -18px rgba(14, 23, 47, 0.45)'
+        panel: '0 18px 42px -24px rgba(15, 29, 53, 0.48)'
       },
       backgroundImage: {
         'page-grid':

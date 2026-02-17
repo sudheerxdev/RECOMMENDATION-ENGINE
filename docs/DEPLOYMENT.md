@@ -1,5 +1,12 @@
 # Deployment Guide
 
+## Best Platform Choice For This Project
+
+- Frontend: Vercel (best fit for Next.js App Router and fastest global edge delivery)
+- Backend API: Render (simple Node service hosting with persistent environment config)
+- Database: MongoDB Atlas
+- Files: Cloudinary
+
 ## Architecture
 
 - Frontend (Next.js) deployed to Vercel
@@ -10,6 +17,11 @@
 - Google OAuth for Google Sign-In
 
 ## Backend Deployment (Render)
+
+You can deploy with either:
+
+- Manual service setup from Render dashboard
+- Blueprint deploy using root `render.yaml` (recommended)
 
 ### 1. Create Render Web Service
 - Connect repository
@@ -30,6 +42,8 @@ JWT_SECRET=...
 JWT_EXPIRES_IN=7d
 FRONTEND_URL=https://<your-vercel-domain>
 FRONTEND_URLS=https://<your-vercel-domain>
+FRONTEND_ORIGIN_REGEX=
+TRUST_PROXY=1
 GOOGLE_CLIENT_ID=<google-oauth-client-id>
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-4.1-mini
@@ -38,6 +52,11 @@ CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
 ```
+
+Notes:
+- `FRONTEND_ORIGIN_REGEX` is optional and useful for preview URLs. Example:
+  `^https:\/\/<your-project>(-git-[a-z0-9-]+)?\.vercel\.app$`
+- Keep `FRONTEND_URL` set to your primary production frontend URL.
 
 ### 3. Seed Production Data
 
@@ -65,8 +84,19 @@ NEXT_PUBLIC_API_BASE_URL=https://<your-render-service>.onrender.com/api
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=<google-oauth-client-id>
 ```
 
+Important:
+- `NEXT_PUBLIC_API_BASE_URL` is required in production builds.
+
 ### 3. Build & Deploy
 - Vercel handles build command automatically (`next build`)
+
+### 4. Configure Google OAuth Domains
+
+- In Google Cloud Console, update OAuth client settings:
+  - Authorized JavaScript origins: `https://<your-vercel-domain>`
+- Keep the same client ID in:
+  - Backend `GOOGLE_CLIENT_ID`
+  - Frontend `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
 
 ## Post-Deployment Checklist
 

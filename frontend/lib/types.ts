@@ -17,6 +17,7 @@ export interface User {
     desiredWorkStyle?: WorkStyle;
     targetIndustries?: string[];
     learningPace?: LearningPace;
+    weeklyHours?: number;
   };
 }
 
@@ -39,6 +40,7 @@ export interface Resource {
   type: string;
   url: string;
   skill?: string;
+  imageUrl?: string;
 }
 
 export interface RoadmapStep {
@@ -95,6 +97,12 @@ export interface RecommendationHistoryItem {
   courses: Resource[];
   projects: string[];
   jobs: string[];
+  recommendationPayload?: {
+    inputSnapshot?: {
+      experienceLevel?: ExperienceLevel;
+    };
+    recommendations?: RecommendationItem[];
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -121,4 +129,61 @@ export interface CareerPathCatalogItem {
   optionalSkills: string[];
   relatedJobRoles: string[];
   tags: string[];
+}
+
+export interface CareerGoal {
+  id: string;
+  title: string;
+  targetDate?: string;
+  linkedSkill?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export type OpportunityType = 'job' | 'internship';
+export type OpportunityWorkMode = 'remote' | 'hybrid' | 'onsite';
+
+export interface Opportunity {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: OpportunityType;
+  workMode: OpportunityWorkMode;
+  experienceLevel: ExperienceLevel;
+  compensation: string;
+  skills: string[];
+  tracks: string[];
+  postedAt: string;
+  description: string;
+  applyUrl: string;
+  source: string;
+}
+
+export interface OpportunityListResponse {
+  opportunities: Opportunity[];
+  meta: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+    catalogSize?: number;
+  };
+  fallbackUsed?: boolean;
+}
+
+export interface ChatHistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatAssistantRequest {
+  message: string;
+  chatHistory?: ChatHistoryMessage[];
+  recommendationContext?: Array<{
+    title: string;
+    suitabilityScore: number;
+    skillGap?: string[];
+    recommendedSkillsToLearn?: string[];
+  }>;
 }

@@ -8,9 +8,10 @@ import type { RecommendationItem } from '@/lib/types';
 
 interface RecommendationFeedProps {
   recommendations: RecommendationItem[];
+  searchQuery?: string;
 }
 
-export const RecommendationFeed = ({ recommendations }: RecommendationFeedProps) => {
+export const RecommendationFeed = ({ recommendations, searchQuery = '' }: RecommendationFeedProps) => {
   return (
     <section id="recommendations" className="space-y-4">
       <div className="flex items-center justify-between">
@@ -56,9 +57,11 @@ export const RecommendationFeed = ({ recommendations }: RecommendationFeedProps)
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">No Recommendations Yet</CardTitle>
+              <CardTitle className="text-lg">{searchQuery ? 'No Matches For Search' : 'No Recommendations Yet'}</CardTitle>
               <CardDescription>
-                Complete your profile and click "Generate Recommendations" to populate this feed.
+                {searchQuery
+                  ? `No roles match "${searchQuery}". Try a broader keyword or clear search.`
+                  : 'Complete your profile and click "Generate Recommendations" to populate this feed.'}
               </CardDescription>
             </CardHeader>
           </Card>

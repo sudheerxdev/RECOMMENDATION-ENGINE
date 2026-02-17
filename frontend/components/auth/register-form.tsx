@@ -40,7 +40,7 @@ export const RegisterForm = () => {
       authStorage.setToken(response.token);
       authStorage.setUser(response.user);
       toast.success('Account created');
-      router.push('/dashboard');
+      router.push('/career-resources');
     } catch (error: any) {
       const message = error?.response?.data?.message || 'Registration failed';
       toast.error(message);

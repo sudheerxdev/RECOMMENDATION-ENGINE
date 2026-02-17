@@ -4,7 +4,8 @@ const preferenceSchema = z
   .object({
     desiredWorkStyle: z.enum(['remote', 'hybrid', 'onsite', 'any']).optional(),
     targetIndustries: z.array(z.string().min(1).max(60)).max(12).optional(),
-    learningPace: z.enum(['casual', 'balanced', 'intensive']).optional()
+    learningPace: z.enum(['casual', 'balanced', 'intensive']).optional(),
+    weeklyHours: z.coerce.number().int().min(1).max(80).optional()
   })
   .optional();
 
@@ -29,6 +30,7 @@ export const googleAuthSchema = z.object({
 
 export const updateProfileSchema = z.object({
   name: z.string().min(2).max(80).optional(),
+  avatarUrl: z.string().url().nullable().optional(),
   resumeURL: z.string().url().nullable().optional(),
   skills: z.array(z.string().min(1).max(50)).max(60).optional(),
   interests: z.array(z.string().min(1).max(50)).max(40).optional(),

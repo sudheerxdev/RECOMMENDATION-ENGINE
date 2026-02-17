@@ -3,6 +3,8 @@ import { authStorage } from './auth';
 import type {
   AuthResponse,
   CareerPathCatalogItem,
+  ChatAssistantRequest,
+  OpportunityListResponse,
   RecommendationHistoryItem,
   RecommendationRequest,
   RecommendationResponse,
@@ -10,8 +12,19 @@ import type {
   User
 } from './types';
 
+const defaultDevApiBaseUrl = 'http://localhost:5000/api';
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || '';
+const resolvedApiBaseUrl =
+  configuredApiBaseUrl || (process.env.NODE_ENV === 'development' ? defaultDevApiBaseUrl : '');
+
+if (!resolvedApiBaseUrl) {
+  throw new Error(
+    'Missing NEXT_PUBLIC_API_BASE_URL. Set it in frontend/.env.local (development) and Vercel project environment (production).'
+  );
+}
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: resolvedApiBaseUrl,
   timeout: 30000
 });
 
@@ -73,13 +86,42 @@ export const apiClient = {
     );
     return unwrap<RecommendationHistoryItem[]>(response);
   },
-  askChatAssistant: async (payload: { message: string; recommendationContext?: unknown[] }) => {
+  askChatAssistant: async (payload: ChatAssistantRequest) => {
     const response = await api.post<{ success: boolean; data: { reply: string } }>('/chat/ask', payload);
     return unwrap<{ reply: string }>(response);
   },
   getCareers: async () => {
     const response = await api.get<{ success: boolean; data: CareerPathCatalogItem[] }>('/careers');
     return unwrap<CareerPathCatalogItem[]>(response);
+  },
+  getOpportunities: async (params?: {
+    q?: string;
+    type?: 'job' | 'internship' | 'all';
+    experienceLevel?: 'entry' | 'mid' | 'senior' | 'all';
+    workMode?: 'remote' | 'hybrid' | 'onsite' | 'all';
+    roles?: string[];
+    skills?: string[];
+    limit?: number;
+    offset?: number;
+  }) => {
+    const response = await api.get<{
+      success: boolean;
+      fallbackUsed?: boolean;
+      data: OpportunityListResponse['opportunities'];
+      meta: OpportunityListResponse['meta'];
+    }>('/opportunities', {
+      params: {
+        ...params,
+        roles: params?.roles?.join(','),
+        skills: params?.skills?.join(',')
+      }
+    });
+
+    return {
+      opportunities: response.data.data,
+      meta: response.data.meta,
+      fallbackUsed: response.data.fallbackUsed
+    } as OpportunityListResponse;
   }
 };
 
